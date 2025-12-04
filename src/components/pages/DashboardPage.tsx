@@ -1,58 +1,86 @@
-import { TrendingUp, TrendingDown, Activity, Database } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Database,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 
 export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-slate-900">仪表盘 Dashboard</h1>
-        <p className="text-slate-500 mt-1">系统概览与关键指标</p>
+        <h1 className="text-slate-900">仪表盘</h1>
+        <p className="text-slate-500 mt-1">
+          系统概览与关键指标
+        </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-slate-600">总数据量</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              总数据量
+            </CardTitle>
             <Database className="w-4 h-4 text-slate-400" />
           </CardHeader>
           <CardContent>
             <div className="text-slate-900">1,234,567</div>
-            <p className="text-xs text-slate-500 mt-1">市场行情数据条数</p>
+            <p className="text-xs text-slate-500 mt-1">
+              市场行情数据条数
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-slate-600">成交数据</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              成交数据
+            </CardTitle>
             <Activity className="w-4 h-4 text-slate-400" />
           </CardHeader>
           <CardContent>
             <div className="text-slate-900">987,654</div>
-            <p className="text-xs text-slate-500 mt-1">计算生成的成交记录</p>
+            <p className="text-xs text-slate-500 mt-1">
+              计算生成的成交记录
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-slate-600">今日涨幅</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              今日涨幅
+            </CardTitle>
             <TrendingUp className="w-4 h-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-green-600">+2.34%</div>
-            <p className="text-xs text-slate-500 mt-1">市场平均涨幅</p>
+            <p className="text-xs text-slate-500 mt-1">
+              市场平均涨幅
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-slate-600">今日跌幅</CardTitle>
+            <CardTitle className="text-sm text-slate-600">
+              今日跌幅
+            </CardTitle>
             <TrendingDown className="w-4 h-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-red-600">-1.23%</div>
-            <p className="text-xs text-slate-500 mt-1">市场平均跌幅</p>
+            <p className="text-xs text-slate-500 mt-1">
+              市场平均跌幅
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -60,15 +88,15 @@ export function DashboardPage() {
       {/* Welcome Card */}
       <Card>
         <CardHeader>
-          <CardTitle>欢迎使用 QuantOps 量化后台系统</CardTitle>
+          <CardTitle>
+            欢迎使用 Caizj的量化交易后台管理系统V1.0
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600">
-            这是一个专业的量化交易数据管理系统，提供市场行情数据管理、成交数据分析、长期维度标签管理等功能。
-          </p>
+          <p className="text-slate-600">这里用来数据占位</p>
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              系统功能：市场行情基础数据管理、成交数据计算分析、长期维度标签分类
+              系统功能拓展占位
             </p>
           </div>
         </CardContent>
