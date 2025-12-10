@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Upload, Download, Search, RotateCcw, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -21,14 +21,30 @@ export function MarketDataPage() {
   const [filterCode, setFilterCode] = useState('');
   const [filterDate, setFilterDate] = useState('');
 
-  // 使用分页 Hook
+  // 筛选数据逻辑
+  const filteredData = useMemo(() => {
+    return MOCK_MARKET_DATA.filter((row) => {
+      // 股票代码筛选
+      const matchesCode = filterCode === '' || row.thscode.toLowerCase().includes(filterCode.toLowerCase());
+      // 交易日期筛选
+      const matchesDate = filterDate === '' || row.tradeDate === filterDate;
+      return matchesCode && matchesDate;
+    });
+  }, [filterCode, filterDate]);
+
+  // 使用分页 Hook（基于筛选后的数据）
   const {
     currentPage,
     currentData,
     goToPage,
-  } = usePagination(MOCK_MARKET_DATA);
+  } = usePagination(filteredData);
 
-  const totalPages = Math.ceil(MOCK_MARKET_DATA.length / 10);
+  const totalPages = Math.ceil(filteredData.length / 10);
+
+  // 当筛选条件变化时，重置到第一页
+  useEffect(() => {
+    goToPage(1);
+  }, [filterCode, filterDate, goToPage]);
 
   const handleReset = () => {
     setFilterCode('');
@@ -118,42 +134,50 @@ export function MarketDataPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentData.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
-                    <TableCell className="text-blue-600">{row.thscode}</TableCell>
-                    <TableCell>{row.tradeDate}</TableCell>
-                    <TableCell>{formatPrice(row.open)}</TableCell>
-                    <TableCell>{formatPrice(row.close)}</TableCell>
-                    <TableCell className="text-red-600">{formatPrice(row.high)}</TableCell>
-                    <TableCell className="text-green-600">{formatPrice(row.low)}</TableCell>
-                    <TableCell>{formatNumber(row.volume)}</TableCell>
-                    <TableCell>{formatAmount(row.amount)}</TableCell>
-                    <TableCell className={getChangeColor(row.change_amount)}>
-                      {formatChange(row.change_amount)}
-                    </TableCell>
-                    <TableCell className={getChangeColor(row.changeRatio)}>
-                      {formatChangePercentage(row.changeRatio)}
-                    </TableCell>
-                    <TableCell>{formatPrice(row.turnoverRatio)}%</TableCell>
-                    <TableCell>{formatPrice(row.preClose)}</TableCell>
-                    <TableCell className="text-slate-500">{row.create_time}</TableCell>
-                    <TableCell className="text-slate-500">{row.update_time}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Eye className="w-4 h-4 text-blue-600" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Pencil className="w-4 h-4 text-slate-600" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
-                      </div>
+                {currentData.length > 0 ? (
+                  currentData.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>{row.id}</TableCell>
+                      <TableCell className="text-blue-600">{row.thscode}</TableCell>
+                      <TableCell>{row.tradeDate}</TableCell>
+                      <TableCell>{formatPrice(row.open)}</TableCell>
+                      <TableCell>{formatPrice(row.close)}</TableCell>
+                      <TableCell className="text-red-600">{formatPrice(row.high)}</TableCell>
+                      <TableCell className="text-green-600">{formatPrice(row.low)}</TableCell>
+                      <TableCell>{formatNumber(row.volume)}</TableCell>
+                      <TableCell>{formatAmount(row.amount)}</TableCell>
+                      <TableCell className={getChangeColor(row.change_amount)}>
+                        {formatChange(row.change_amount)}
+                      </TableCell>
+                      <TableCell className={getChangeColor(row.changeRatio)}>
+                        {formatChangePercentage(row.changeRatio)}
+                      </TableCell>
+                      <TableCell>{formatPrice(row.turnoverRatio)}%</TableCell>
+                      <TableCell>{formatPrice(row.preClose)}</TableCell>
+                      <TableCell className="text-slate-500">{row.create_time}</TableCell>
+                      <TableCell className="text-slate-500">{row.update_time}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Eye className="w-4 h-4 text-blue-600" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Pencil className="w-4 h-4 text-slate-600" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={16} className="text-center text-slate-500 py-8">
+                      暂无数据
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -163,7 +187,7 @@ export function MarketDataPage() {
             currentPage={currentPage}
             totalPages={totalPages}
             pageSize={10}
-            totalItems={MOCK_MARKET_DATA.length}
+            totalItems={filteredData.length}
             onPageChange={goToPage}
           />
         </CardContent>

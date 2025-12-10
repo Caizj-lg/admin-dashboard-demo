@@ -73,9 +73,6 @@
     --color-blue-600: oklch(.546 .245 262.881);
     --color-blue-700: oklch(.488 .243 264.376);
     --color-blue-800: oklch(.424 .199 265.638);
-    --color-purple-100: oklch(.946 .033 307.174);
-    --color-purple-200: oklch(.902 .063 306.703);
-    --color-purple-700: oklch(.496 .265 301.924);
     --color-slate-50: oklch(.984 .003 247.858);
     --color-slate-100: oklch(.968 .007 247.896);
     --color-slate-200: oklch(.929 .013 255.508);
@@ -873,10 +870,6 @@
     border-color: var(--color-orange-200);
   }
 
-  .border-purple-200 {
-    border-color: var(--color-purple-200);
-  }
-
   .border-red-200 {
     border-color: var(--color-red-200);
   }
@@ -957,10 +950,6 @@
 
   .bg-primary {
     background-color: var(--primary);
-  }
-
-  .bg-purple-100 {
-    background-color: var(--color-purple-100);
   }
 
   .bg-red-100 {
@@ -1063,6 +1052,10 @@
     padding-block: calc(var(--spacing) * 4);
   }
 
+  .py-8 {
+    padding-block: calc(var(--spacing) * 8);
+  }
+
   .pt-6 {
     padding-top: calc(var(--spacing) * 6);
   }
@@ -1093,6 +1086,10 @@
 
   .pl-10 {
     padding-left: calc(var(--spacing) * 10);
+  }
+
+  .text-center {
+    text-align: center;
   }
 
   .text-left {
@@ -1191,10 +1188,6 @@
 
   .text-primary-foreground {
     color: var(--primary-foreground);
-  }
-
-  .text-purple-700 {
-    color: var(--color-purple-700);
   }
 
   .text-red-500 {

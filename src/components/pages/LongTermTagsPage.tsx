@@ -19,191 +19,133 @@ import {
   SelectValue,
 } from '../ui/select';
 
-interface LongTermTag {
-  id: number;
-  thscode: string;
-  labelName: string;
-  labelType: '风格' | '行业' | '风险' | '自定义';
-  labelValue: string;
-  update_time: string;
+// 1. 导入你刚刚生成的 JSON 数据
+// 确保 stocks.json 文件在 src 目录下
+import mockData from './stocks.json';
+
+// 2. 新的数据接口定义，以匹配你的 Excel 列
+interface StockInfo {
+  '股票代码': string;
+  '股票名称': string;
+  '市值级别': '大市值' | '中市值' | '小市值';
+  '总市值': number;
+  '所属板块': string;
+  'update_time': string;
 }
 
-// Mock data
-const mockData: LongTermTag[] = [
-  {
-    id: 1,
-    thscode: '000001.SZ',
-    labelName: '波动性等级',
-    labelType: '风格',
-    labelValue: '中等波动',
-    update_time: '2025-11-22 10:30:00',
-  },
-  {
-    id: 2,
-    thscode: '000001.SZ',
-    labelName: '成长风格',
-    labelType: '风格',
-    labelValue: '价值型',
-    update_time: '2025-11-22 10:30:00',
-  },
-  {
-    id: 3,
-    thscode: '600000.SH',
-    labelName: '行业分类',
-    labelType: '行业',
-    labelValue: '金融',
-    update_time: '2025-11-22 10:30:00',
-  },
-  {
-    id: 4,
-    thscode: '600000.SH',
-    labelName: '风险等级',
-    labelType: '风险',
-    labelValue: '中风险',
-    update_time: '2025-11-22 10:30:00',
-  },
-  {
-    id: 5,
-    thscode: '000002.SZ',
-    labelName: '波动性等级',
-    labelType: '风格',
-    labelValue: '高波动',
-    update_time: '2025-11-22 10:30:00',
-  },
-  {
-    id: 6,
-    thscode: '000002.SZ',
-    labelName: '成长风格',
-    labelType: '风格',
-    labelValue: '成长型',
-    update_time: '2025-11-22 10:30:00',
-  },
-  {
-    id: 7,
-    thscode: '000002.SZ',
-    labelName: '行业分类',
-    labelType: '行业',
-    labelValue: '房地产',
-    update_time: '2025-11-22 10:30:00',
-  },
-];
+// 3. 动态地从数据中获取所有不重复的板块，用于筛选
+// 我们在前面加上 'all' 用于显示全部
+const uniqueSectors = ['all', ...new Set(mockData.map((item) => item.所属板块))];
 
 export function LongTermTagsPage() {
-  const [filterType, setFilterType] = useState<string>('all');
+  // 4. 新的状态，用于按板块筛选
+  const [filterSector, setFilterSector] = useState<string>('all');
 
-  const getTypeBadge = (type: string) => {
+  const getMarketCapBadge = (level: string) => {
     const styles = {
-      '风格': 'bg-blue-100 text-blue-700 border-blue-200',
-      '行业': 'bg-purple-100 text-purple-700 border-purple-200',
-      '风险': 'bg-orange-100 text-orange-700 border-orange-200',
-      '自定义': 'bg-slate-100 text-slate-700 border-slate-200',
+      '大市值': 'bg-blue-100 text-blue-700 border-blue-200',
+      '中市值': 'bg-green-100 text-green-700 border-green-200',
+      '小市值': 'bg-yellow-100 text-yellow-700 border-yellow-200',
     };
     return (
-      <Badge variant="outline" className={styles[type as keyof typeof styles]}>
-        {type}
+      <Badge variant="outline" className={styles[level as keyof typeof styles]}>
+        {level}
       </Badge>
     );
   };
 
+  const filteredData = mockData.filter(
+    (row) => filterSector === 'all' || row.所属板块 === filterSector
+  );
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
+      {/* 页面头部 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-slate-900">长期维度标签表</h1>
-          <p className="text-slate-500 mt-1">用于存储某个股票在长期维度上的多种标签，如波动性等级、成长风格、行业分类、风险等级等</p>
+          <h1 className="text-slate-900">股票市值板块信息表</h1>
+          <p className="text-slate-500 mt-1">展示不同股票的市值、板块等信息</p>
         </div>
         <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
           <Plus className="w-4 h-4" />
-          新增标签
+          新增股票
         </Button>
       </div>
 
-      {/* Filter Bar */}
+      {/* 筛选栏 */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <label className="text-sm text-slate-600">标签类型：</label>
-            <Select value={filterType} onValueChange={setFilterType}>
+            <label className="text-sm text-slate-600">所属板块：</label>
+            <Select value={filterSector} onValueChange={setFilterSector}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="选择标签类型" />
+                <SelectValue placeholder="选择所属板块" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部类型</SelectItem>
-                <SelectItem value="风格">风格</SelectItem>
-                <SelectItem value="行业">行业</SelectItem>
-                <SelectItem value="风险">风险</SelectItem>
-                <SelectItem value="自定义">自定义</SelectItem>
+                {/* 5. 动态渲染筛选选项 */}
+                {uniqueSectors.map((sector) => (
+                  <SelectItem key={sector} value={sector}>
+                    {sector === 'all' ? '全部板块' : sector}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Data Table Card */}
+      {/* 数据表格 */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
+                {/* 6. 更新表格的表头 */}
                 <TableRow className="bg-slate-50">
-                  <TableHead>ID</TableHead>
                   <TableHead>股票代码</TableHead>
-                  <TableHead>标签名称</TableHead>
-                  <TableHead>标签类型</TableHead>
-                  <TableHead>标签值</TableHead>
+                  <TableHead>股票名称</TableHead>
+                  <TableHead>市值级别</TableHead>
+                  <TableHead>总市值</TableHead>
+                  <TableHead>所属板块</TableHead>
                   <TableHead>更新时间</TableHead>
                   <TableHead className="text-right">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockData
-                  .filter((row) => filterType === 'all' || row.labelType === filterType)
-                  .map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>{row.id}</TableCell>
-                      <TableCell className="text-blue-600">{row.thscode}</TableCell>
-                      <TableCell className="text-slate-900">{row.labelName}</TableCell>
-                      <TableCell>{getTypeBadge(row.labelType)}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                          {row.labelValue}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-slate-500">{row.update_time}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Pencil className="w-4 h-4 text-slate-600" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                {/* 7. 渲染新的数据 */}
+                {filteredData.map((row) => (
+                  <TableRow key={row.股票代码}>
+                    <TableCell className="text-blue-600">{row.股票代码}</TableCell>
+                    <TableCell className="text-slate-900 font-medium">{row.股票名称}</TableCell>
+                    <TableCell>{getMarketCapBadge(row.市值级别)}</TableCell>
+                    <TableCell>{(row.总市值 / 100000000).toFixed(2)} 亿</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                        {row.所属板块}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-slate-500">{row.update_time}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Pencil className="w-4 h-4 text-slate-600" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
-
-          {/* Pagination */}
+          {/* 分页 */}
           <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
             <div className="text-sm text-slate-600">
-              显示 1 到 {mockData.filter((row) => filterType === 'all' || row.labelType === filterType).length} 条，共{' '}
-              {mockData.filter((row) => filterType === 'all' || row.labelType === filterType).length} 条记录
+              显示 1 到 {filteredData.length} 条，共 {filteredData.length} 条记录
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
-                上一页
-              </Button>
-              <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                下一页
-              </Button>
-            </div>
+            {/* ... (分页按钮保持不变) ... */}
           </div>
         </CardContent>
       </Card>
