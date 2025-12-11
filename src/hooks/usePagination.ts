@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { TABLE_CONFIG } from '../constants/table-config';
 
 /**
@@ -21,25 +21,28 @@ export function usePagination<T>(data: T[], defaultPageSize = TABLE_CONFIG.DEFAU
   }, [data, currentPage, pageSize]);
 
   // 跳转到指定页
-  const goToPage = (page: number) => {
-    const validPage = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(validPage);
-  };
+  const goToPage = useCallback(
+    (page: number) => {
+      const validPage = Math.max(1, Math.min(page, totalPages));
+      setCurrentPage(validPage);
+    },
+    [totalPages]
+  );
 
   // 上一页
-  const goToPrevPage = () => {
+  const goToPrevPage = useCallback(() => {
     goToPage(currentPage - 1);
-  };
+  }, [currentPage, goToPage]);
 
   // 下一页
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     goToPage(currentPage + 1);
-  };
+  }, [currentPage, goToPage]);
 
   // 重置分页
-  const resetPagination = () => {
+  const resetPagination = useCallback(() => {
     setCurrentPage(1);
-  };
+  }, []);
 
   return {
     currentPage,

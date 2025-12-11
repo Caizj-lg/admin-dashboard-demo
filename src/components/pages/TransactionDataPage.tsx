@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, RotateCcw } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -12,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
+import { DataTablePagination } from '../common/DataTablePagination';
+import { usePagination } from '../../hooks/usePagination';
 import {
   Select,
   SelectContent,
@@ -24,11 +26,8 @@ import { MOCK_TRANSACTION_DATA } from '../../mocks/transaction-data.mock';
 const ITEMS_PER_PAGE = 10;
 
 export function TransactionDataPage() {
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchCode, setSearchCode] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-
-  const pageSize = ITEMS_PER_PAGE;
 
   // 动态获取所有不重复的交易状态
   const uniqueStatuses = useMemo(() => {
@@ -50,13 +49,18 @@ export function TransactionDataPage() {
   const handleReset = () => {
     setSearchCode('');
     setFilterStatus('all');
-    setCurrentPage(1);
   };
+
+  // 分页 Hook（基于筛选后的数据）
+  const { currentPage, pageSize, totalPages, currentData: paginatedData, goToPage } = usePagination(
+    filteredData,
+    ITEMS_PER_PAGE
+  );
 
   // 当筛选条件改变时，重置到第一页
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchCode, filterStatus]);
+    goToPage(1);
+  }, [searchCode, filterStatus, goToPage]);
 
   // 交易状态徽章
   const getTradeStatusBadge = (status: string) => {
@@ -72,16 +76,6 @@ export function TransactionDataPage() {
       </Badge>
     );
   };
-
-  // 分页计算
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
-
-  // 分页按钮点击事件
-  const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   return (
     <div className="space-y-6">
@@ -125,7 +119,7 @@ export function TransactionDataPage() {
             <div className="flex gap-2">
               <Button 
                 className="gap-2 bg-blue-600 hover:bg-blue-700"
-                onClick={() => setCurrentPage(1)}
+                onClick={() => goToPage(1)}
               >
                 <Search className="w-4 h-4" />
                 查询
@@ -189,22 +183,13 @@ export function TransactionDataPage() {
             </Table>
           </div>
           {/* 分页 */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
-            <div className="text-sm text-slate-600">
-              显示 {paginatedData.length > 0 ? startIndex + 1 : 0} 到 {startIndex + paginatedData.length} 条，共 {filteredData.length} 条记录
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={currentPage === 1}>
-                上一页
-              </Button>
-              <span className="text-sm text-slate-600">
-                第 {currentPage} 页 / 共 {totalPages > 0 ? totalPages : 1} 页
-              </span>
-              <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0}>
-                下一页
-              </Button>
-            </div>
-          </div>
+          <DataTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredData.length}
+            onPageChange={goToPage}
+          />
         </CardContent>
       </Card>
     </div>

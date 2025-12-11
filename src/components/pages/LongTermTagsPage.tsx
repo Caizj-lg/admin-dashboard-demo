@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { DataTablePagination } from '../common/DataTablePagination';
+import { usePagination } from '../../hooks/usePagination';
 
 // 1. 导入你刚刚生成的 JSON 数据
 // 确保 stocks.json 文件在 src 目录下
@@ -54,9 +56,18 @@ export function LongTermTagsPage() {
     );
   };
 
-  const filteredData = mockData.filter(
-    (row) => filterSector === 'all' || row.所属板块 === filterSector
+  const filteredData = useMemo(
+    () => mockData.filter((row) => filterSector === 'all' || row.所属板块 === filterSector),
+    [filterSector]
   );
+
+  // 分页（基于筛选后的数据）
+  const { currentPage, pageSize, totalPages, currentData, goToPage } = usePagination(filteredData);
+
+  // 筛选变更时回到第一页
+  useEffect(() => {
+    goToPage(1);
+  }, [filterSector, goToPage]);
 
   return (
     <div className="space-y-6">
@@ -113,7 +124,7 @@ export function LongTermTagsPage() {
               </TableHeader>
               <TableBody>
                 {/* 7. 渲染新的数据 */}
-                {filteredData.map((row) => (
+                {currentData.map((row) => (
                   <TableRow key={row.股票代码}>
                     <TableCell className="text-blue-600">{row.股票代码}</TableCell>
                     <TableCell className="text-slate-900 font-medium">{row.股票名称}</TableCell>
@@ -141,12 +152,13 @@ export function LongTermTagsPage() {
             </Table>
           </div>
           {/* 分页 */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
-            <div className="text-sm text-slate-600">
-              显示 1 到 {filteredData.length} 条，共 {filteredData.length} 条记录
-            </div>
-            {/* ... (分页按钮保持不变) ... */}
-          </div>
+          <DataTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredData.length}
+            onPageChange={goToPage}
+          />
         </CardContent>
       </Card>
     </div>

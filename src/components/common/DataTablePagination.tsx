@@ -15,8 +15,9 @@ export function DataTablePagination({
   totalItems,
   onPageChange,
 }: DataTablePaginationProps) {
-  const startIndex = (currentPage - 1) * pageSize + 1;
-  const endIndex = Math.min(currentPage * pageSize, totalItems);
+  const hasData = totalItems > 0;
+  const startIndex = hasData ? (currentPage - 1) * pageSize + 1 : 0;
+  const endIndex = hasData ? Math.min(currentPage * pageSize, totalItems) : 0;
 
   // 生成页码数组（显示当前页附近的页码）
   const getPageNumbers = () => {
