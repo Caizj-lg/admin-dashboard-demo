@@ -77,10 +77,6 @@ export function LongTermTagsPage() {
           <h1 className="text-slate-900">股票市值板块信息表</h1>
           <p className="text-slate-500 mt-1">展示不同股票的市值、板块等信息</p>
         </div>
-        <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" />
-          新增股票
-        </Button>
       </div>
 
       {/* 筛选栏 */}
