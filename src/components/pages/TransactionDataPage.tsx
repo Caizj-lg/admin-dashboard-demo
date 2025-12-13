@@ -65,9 +65,9 @@ export function TransactionDataPage() {
   // 交易状态徽章
   const getTradeStatusBadge = (status: string) => {
     const styles = {
-      '强制平仓': 'bg-red-100 text-red-700 border-red-200',
+      '强制平仓': 'bg-orange-100 text-orange-700 border-orange-200',
       '止盈': 'bg-green-100 text-green-700 border-green-200',
-      '止损': 'bg-orange-100 text-orange-700 border-orange-200',
+      '止损': 'bg-red-100 text-red-700 border-red-200',
     };
     const defaultStyle = 'bg-slate-100 text-slate-700 border-slate-200';
     return (
@@ -148,8 +148,11 @@ export function TransactionDataPage() {
                   <TableHead>最低价</TableHead>
                   <TableHead>开盘价</TableHead>
                   <TableHead>收盘价</TableHead>
-                  <TableHead>自定义振幅</TableHead>
+                  <TableHead className="text-center">（最高价-昨收价）/昨收价</TableHead>
+                  <TableHead className="text-center">（最低价-昨收价）/昨收价</TableHead>
+                  <TableHead className="text-center">（收盘价-昨收价）/昨收价</TableHead>                   
                   <TableHead>模拟交易状态</TableHead>
+                  <TableHead>结算盈利</TableHead>   
                   <TableHead>创建时间</TableHead>
                   <TableHead>更新时间</TableHead>
                 </TableRow>
@@ -165,16 +168,19 @@ export function TransactionDataPage() {
                       <TableCell className="text-green-600">{row.high.toFixed(2)}</TableCell>
                       <TableCell className="text-red-600">{row.low.toFixed(2)}</TableCell>
                       <TableCell>{row.open.toFixed(2)}</TableCell>
-                      <TableCell className="font-medium">{row.close.toFixed(2)}</TableCell>
-                      <TableCell>{row.high_preClose_pct}</TableCell>
+                      <TableCell >{row.close.toFixed(2)}</TableCell>
+                      <TableCell className="text-center font-medium">{row.high_preClose_pct}</TableCell>
+                      <TableCell className="text-center font-medium">{row.low_preClose_pct}</TableCell>
+                      <TableCell className="text-center font-medium">{row.close_preClose_pct}</TableCell>
                       <TableCell>{getTradeStatusBadge(row.status)}</TableCell>
+                      <TableCell className="text-center font-medium">{row.settlement_pct}</TableCell>
                       <TableCell className="text-slate-500 text-xs">{row.create_time}</TableCell>
                       <TableCell className="text-slate-500 text-xs">{row.update_time}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={12} className="text-center text-slate-500 py-8">
+                    <TableCell colSpan={15} className="text-center text-slate-500 py-8">
                       暂无数据
                     </TableCell>
                   </TableRow>
