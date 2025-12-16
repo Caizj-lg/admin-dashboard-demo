@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Upload, Download, Search, RotateCcw, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -18,6 +18,10 @@ import { usePagination } from '../../hooks/usePagination';
 import { formatPrice, formatAmount, formatNumber, formatChangePercentage, formatChange, getChangeColor } from '../../lib/formatters';
 
 export function MarketDataPage() {
+  // 输入中的值
+  const [filterCodeInput, setFilterCodeInput] = useState('');
+  const [filterDateInput, setFilterDateInput] = useState('');
+  // 生效后的查询条件
   const [filterCode, setFilterCode] = useState('');
   const [filterDate, setFilterDate] = useState('');
 
@@ -41,14 +45,22 @@ export function MarketDataPage() {
 
   const totalPages = Math.ceil(filteredData.length / 10);
 
-  // 当筛选条件变化时，重置到第一页
-  useEffect(() => {
-    goToPage(1);
-  }, [filterCode, filterDate, goToPage]);
-
   const handleReset = () => {
+    setFilterCodeInput('');
+    setFilterDateInput('');
     setFilterCode('');
     setFilterDate('');
+    goToPage(1);
+  };
+
+  const handleQuery = () => {
+    setFilterCode(filterCodeInput);
+    setFilterDate(filterDateInput);
+    goToPage(1);
+  };
+
+  const handleExport = () => {
+    exportMarketDataToCSV(filteredData);
   };
 
   return (
@@ -59,13 +71,12 @@ export function MarketDataPage() {
         description="查看和管理市场行情基础数据表"
         actions={
           <>
-            <Button variant="outline" className="gap-2">
-              <Upload className="w-4 h-4" />
-              导入数据
-            </Button>
-            <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              onClick={handleExport}
+            >
               <Download className="w-4 h-4" />
-              导出 CSV
+              导出 CSV 数据
             </Button>
           </>
         }
@@ -82,20 +93,23 @@ export function MarketDataPage() {
               <label className="block text-sm text-slate-600 mb-2">股票代码</label>
               <Input
                 placeholder="请输入股票代码，如：000001.SZ"
-                value={filterCode}
-                onChange={(e) => setFilterCode(e.target.value)}
+                value={filterCodeInput}
+                onChange={(e) => setFilterCodeInput(e.target.value)}
               />
             </div>
             <div className="flex-1">
               <label className="block text-sm text-slate-600 mb-2">交易日期</label>
               <Input
                 type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
+                value={filterDateInput}
+                onChange={(e) => setFilterDateInput(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
-              <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
+              <Button
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
+                onClick={handleQuery}
+              >
                 <Search className="w-4 h-4" />
                 查询
               </Button>
@@ -194,4 +208,66 @@ export function MarketDataPage() {
       </Card>
     </div>
   );
+}
+
+// 临时放置的 CSV 导出工具，后续可抽离到 lib/export.ts
+function exportMarketDataToCSV(data: any[]) {
+  if (!data || data.length === 0) return;
+
+  // CSV 表头
+  const headers = [
+    'ID',
+    '股票代码',
+    '交易日期',
+    '开盘价',
+    '收盘价',
+    '最高价',
+    '最低价',
+    '成交量',
+    '成交额',
+    '涨跌额',
+    '涨跌幅',
+    '换手率',
+    '昨收价',
+    '创建时间',
+    '更新时间',
+  ];
+
+  const rows = data.map((row) => [
+    row.id,
+    row.thscode,
+    row.tradeDate,
+    row.open,
+    row.close,
+    row.high,
+    row.low,
+    row.volume,
+    row.amount,
+    row.change_amount,
+    row.changeRatio,
+    row.turnoverRatio,
+    row.preClose,
+    row.create_time,
+    row.update_time,
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${cell ?? ''}"`).join(','))
+    .join('\n');
+
+  // 添加 UTF-8 BOM，避免 Excel 打开时中文乱码
+  const csvWithBom = '\uFEFF' + csvContent;
+
+  const blob = new Blob([csvWithBom], {
+    type: 'text/csv;charset=utf-8;',
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = `market-data-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
 }

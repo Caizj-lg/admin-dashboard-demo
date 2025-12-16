@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Search, RotateCcw } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, RotateCcw, Download } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
@@ -26,6 +26,10 @@ import { MOCK_TRANSACTION_DATA } from '../../mocks/transaction-data.mock';
 const ITEMS_PER_PAGE = 10;
 
 export function TransactionDataPage() {
+  // 输入中的值
+  const [searchCodeInput, setSearchCodeInput] = useState('');
+  const [filterStatusInput, setFilterStatusInput] = useState<string>('all');
+  // 生效后的查询条件
   const [searchCode, setSearchCode] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -47,8 +51,21 @@ export function TransactionDataPage() {
 
   // 重置筛选条件
   const handleReset = () => {
+    setSearchCodeInput('');
+    setFilterStatusInput('all');
     setSearchCode('');
     setFilterStatus('all');
+    goToPage(1);
+  };
+
+  const handleQuery = () => {
+    setSearchCode(searchCodeInput);
+    setFilterStatus(filterStatusInput);
+    goToPage(1);
+  };
+
+  const handleExport = () => {
+    exportTransactionDataToCSV(filteredData);
   };
 
   // 分页 Hook（基于筛选后的数据）
@@ -80,9 +97,18 @@ export function TransactionDataPage() {
   return (
     <div className="space-y-6">
       {/* 页面头部 */}
-      <div>
-        <h1 className="text-slate-900">成交数据</h1>
-        <p className="text-slate-500 mt-1">查看并管理股票的成交详情</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-slate-900">成交数据</h1>
+          <p className="text-slate-500 mt-1">查看并管理股票的成交详情</p>
+        </div>
+        <Button
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              onClick={handleExport}
+            >
+              <Download className="w-4 h-4" />
+              导出 CSV 数据
+            </Button>
       </div>
 
       {/* 查询和筛选模块 */}
@@ -97,13 +123,13 @@ export function TransactionDataPage() {
               <label className="block text-sm text-slate-600 mb-2">股票代码</label>
               <Input
                 placeholder="请输入股票代码"
-                value={searchCode}
-                onChange={(e) => setSearchCode(e.target.value)}
+                value={searchCodeInput}
+                onChange={(e) => setSearchCodeInput(e.target.value)}
               />
             </div>
             <div className="flex-1">
               <label className="block text-sm text-slate-600 mb-2">模拟交易状态</label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select value={filterStatusInput} onValueChange={setFilterStatusInput}>
                 <SelectTrigger>
                   <SelectValue placeholder="选择交易状态" />
                 </SelectTrigger>
@@ -119,7 +145,7 @@ export function TransactionDataPage() {
             <div className="flex gap-2">
               <Button 
                 className="gap-2 bg-blue-600 hover:bg-blue-700"
-                onClick={() => goToPage(1)}
+                onClick={handleQuery}
               >
                 <Search className="w-4 h-4" />
                 查询
@@ -200,4 +226,65 @@ export function TransactionDataPage() {
       </Card>
     </div>
   );
+}
+
+// 临时放置的 CSV 导出工具，后续可抽离到 lib/export.ts
+function exportTransactionDataToCSV(data: any[]) {
+  if (!data || data.length === 0) return;
+
+  const headers = [
+    'ID',
+    '股票代码',
+    '交易日期',
+    '昨收价',
+    '最高价',
+    '最低价',
+    '开盘价',
+    '收盘价',
+    '（最高价-昨收价）/昨收价',
+    '（最低价-昨收价）/昨收价',
+    '（收盘价-昨收价）/昨收价',
+    '模拟交易状态',
+    '结算盈利',
+    '创建时间',
+    '更新时间',
+  ];
+
+  const rows = data.map((row) => [
+    row.id,
+    row.thscode,
+    row.tradeDate,
+    row.preClose,
+    row.high,
+    row.low,
+    row.open,
+    row.close,
+    row.high_preClose_pct,
+    row.low_preClose_pct,
+    row.close_preClose_pct,
+    row.status,
+    row.settlement_pct,
+    row.create_time,
+    row.update_time,
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${cell ?? ''}"`).join(','))
+    .join('\n');
+
+  // 添加 UTF-8 BOM，避免 Excel 打开时中文乱码
+  const csvWithBom = '\uFEFF' + csvContent;
+
+  const blob = new Blob([csvWithBom], {
+    type: 'text/csv;charset=utf-8;',
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = `transaction-data-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
 }
